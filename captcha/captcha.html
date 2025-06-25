@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Joel</title>
+  <title>Captcha</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style type="text/css">
@@ -20,19 +20,177 @@
       height: 300px;
     }
 
-    /* Your style here... */
+    .content {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    #captcha-prompt {
+      width: 100%;
+      background: #4285f4;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #captcha-prompt p {
+      margin: 8px;
+    }
+
+    #captcha-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 6px;
+      width: 92%;
+      max-width: 350px;
+      height: 200px;
+      max-height: 200px;
+      box-sizing: border-box;
+      background: #fff;
+      justify-items: stretch;
+      align-items: stretch;
+      flex: 1 1 0;
+      min-height: 0;
+    }
+
+    #captcha-grid .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-sizing: border-box;
+      aspect-ratio: 1 / 1;
+      min-width: 0;
+      min-height: 0;
+      border-radius: 6px;
+      border: 1.5px solid #e0e0e0;
+      background: #fafbfc;
+      position: relative;
+      transition: border 0.15s;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    #captcha-grid .container.selected {
+      border: 2.5px solid #4285f4;
+      box-shadow: 0 0 0 2px #c6dbfa;
+    }
+    #captcha-grid .container.selected .checkmark {
+      display: flex;
+    }
+    #captcha-grid .container .checkmark {
+      display: none;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 18px;
+      height: 18px;
+      z-index: 2;
+      background: #4285f4;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+      align-items: center;
+      justify-content: center;
+    }
+    #captcha-grid .container .checkmark svg {
+      width: 12px;
+      height: 12px;
+      fill: #fff;
+      display: block;
+    }
+    #captcha-grid .container.incorrect .checkmark {
+      background: #f44336;
+    }
+    #captcha-grid .container.correct .checkmark {
+      background: #4caf50;
+    }
+    #captcha-grid .container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      box-sizing: border-box;
+      border-radius: 4px;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    #next-captcha, #loading-next-captcha {
+      margin: 10px auto 0 auto;
+      display: block;
+      width: 90%;
+      max-width: 180px;
+      height: 30px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: none;
+      background: #4285f4;
+      color: #fff;
+      cursor: pointer;
+      box-sizing: border-box;
+      letter-spacing: 0.5px;
+      transition: background 0.15s;
+      flex: 0 0 auto;
+    }
+    #next-captcha:hover {
+      background: #3367d6;
+    }
+
+    #loading-next-captcha {
+      max-width: 190px;
+      background: #4285f4;
+      color: #fff;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    #captcha-preview {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      width: 150px;
+      height: 150px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      border: 2px solid grey;
+      max-width: 95%;
+      max-height: 95%;
+    }
+    #captcha-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      display: block;
+    }
   </style>
 </head>
 
 <body>
   <div id="captcha-container">
-    <!-- Add your CAPTCHA here: -->
-    Hello world!
-
-    <!-- We've added a sample button. Feel free to remove it: -->
-    <button id="solve">
-      Solve!
-    </button>
+    <div class="content">
+      <div id="captcha-prompt"><p></p></div>
+      <div id="captcha-grid"></div>
+      <button id="loading-next-captcha" disabled style="display: none;">CHECKING...</button>
+      <button id="next-captcha">NEXT (<span id="captcha-count">0</span>/<span id="captcha-total">3</span>)</button>
+      <div id="captcha-preview"><img src="" alt="preview" /></div>
+    </div>
   </div>
 
   <script type="text/javascript">
@@ -42,6 +200,133 @@
         window.top.postMessage("success", '*');
       }
 
+      let captchas = [];
+
+      async function getRandomCaptcha() {
+        if (captchas.length === 0) {
+          const response = await fetch('captchas.json');
+          captchas = await response.json();
+        }
+        const randomIndex = Math.floor(Math.random() * captchas.length);
+        const captcha = captchas[randomIndex];
+        captchas.splice(randomIndex, 1);
+        return captcha;
+      }
+
+      let correctCount = 0;
+      let currentCaptcha = null;
+      let checking = false;
+      async function loadCaptcha() {
+        currentCaptcha = await getRandomCaptcha();
+        document.querySelector('#captcha-prompt p').textContent = currentCaptcha.prompt;
+        const grid = document.getElementById('captcha-grid');
+        grid.innerHTML = '';
+        const selected = new Set();
+        const images = Array.from({ length: 9 }, (_, i) => i + 1);
+        while (images.length > 0) {
+          const randomIndex = Math.floor(Math.random() * images.length);
+          const i = images[randomIndex];
+          images.splice(randomIndex, 1);
+          const j = Math.floor(Math.random() * 3) + 1;
+          const container = document.createElement('div');
+          container.classList.add('container');
+          container.dataset.index = i;
+          const img = document.createElement('img');
+          img.src = `images/${currentCaptcha.id.padStart(2, '0')}/${i.toString().padStart(2, '0')}-${j.toString().padStart(2, '0')}.jpg`;
+          container.appendChild(img);
+
+          const checkmark = document.createElement('span');
+          checkmark.className = 'checkmark';
+          checkmark.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20.7 6.3a1 1 0 0 0-1.4 0l-8.3 8.3-3.3-3.3a1 1 0 1 0-1.4 1.4l4 4a1 1 0 0 0 1.4 0l9-9a1 1 0 0 0 0-1.4z"/></svg>`;
+          container.appendChild(checkmark);
+
+          img.addEventListener('mouseenter', function(e) {
+            const preview = document.getElementById('captcha-preview');
+            const previewImg = preview.querySelector('img');
+            previewImg.src = img.src;
+            preview.style.display = 'flex';
+          });
+          img.addEventListener('mousemove', function(e) {
+            const preview = document.getElementById('captcha-preview');
+            const containerRect = document.getElementById('captcha-container').getBoundingClientRect();
+            let x = e.clientX - containerRect.left;
+            let y = e.clientY - containerRect.top;
+
+            const previewW = 180;
+            const previewH = 180;
+            if (x + previewW > containerRect.width) x = containerRect.width - previewW;
+            if (y + previewH > containerRect.height) y = containerRect.height - previewH;
+            if (x < 0) x = 0;
+            if (y < 0) y = 0;
+            preview.style.left = x + 'px';
+            preview.style.top = y + 'px';
+            preview.style.transform = 'none';
+          });
+          img.addEventListener('mouseleave', function(e) {
+            const preview = document.getElementById('captcha-preview');
+            preview.style.display = 'none';
+          });
+          container.addEventListener('click', function() {
+            if (checking) return;
+            if (container.classList.toggle('selected')) {
+              selected.add(i);
+            } else {
+              selected.delete(i);
+            }
+          });
+          grid.appendChild(container);
+        }
+
+        selected.clear();
+      }
+
+      const nextCaptchaButton = document.getElementById('next-captcha');
+      const loadingNextCaptchaButton = document.getElementById('loading-next-captcha');
+      nextCaptchaButton.addEventListener('click', () => {
+        loadingNextCaptchaButton.textContent = 'CHECKING...';
+        nextCaptchaButton.style.display = 'none';
+        loadingNextCaptchaButton.style.display = 'block';
+        checking = true;
+        setTimeout(() => {
+          let totalCorrect = 0;
+          let totalIncorrect = 0;
+          document.querySelectorAll('#captcha-grid .container.selected').forEach(container => {
+            if (currentCaptcha.answers.includes(parseInt(container.dataset.index))) {
+              container.classList.add('correct');
+              totalCorrect++;
+            } else {
+              container.classList.add('incorrect');
+              const checkmark = container.querySelector('.checkmark');
+              checkmark.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+              totalIncorrect++;
+            }
+          });
+  
+          if (totalCorrect === currentCaptcha.answers.length && totalIncorrect === 0) {
+            correctCount++;
+            loadingNextCaptchaButton.textContent = 'CORRECT!';
+          } else if (totalIncorrect === 0 && totalCorrect < currentCaptcha.answers.length) {
+            loadingNextCaptchaButton.textContent = 'MISSING ANSWERS...';
+          } else if (totalIncorrect > 0) {
+            loadingNextCaptchaButton.textContent = 'INCORRECT!';
+          }
+  
+          setTimeout(() => {
+            loadingNextCaptchaButton.style.display = 'none';
+            nextCaptchaButton.style.display = 'block';
+            document.querySelector('#captcha-count').textContent = correctCount;
+            if (correctCount === 3) {
+              captchaSuccess();
+            } else {
+              loadCaptcha();
+            }
+            checking = false;
+          }, 2000);
+        }, 2000);
+      });
+
+      loadCaptcha();
+
       // Your CAPTCHA code goes here, we've added a simple example below:
       document.getElementById('solve')
            .addEventListener('click', () => captchaSuccess());
@@ -50,3 +335,4 @@
   </script>
 </body>
 </html>
+

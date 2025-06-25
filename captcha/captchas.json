@@ -1,0 +1,21 @@
+[{
+  "id": "01",
+  "prompt": "Select all the images that make you feel a vague sense of existential dread.",
+  "answers": [1, 2, 4, 6, 8]
+}, {
+  "id": "02",
+  "prompt": "Select all the images depicting a place you'd hide your most embarrassing childhood diary.",
+  "answers": [2, 3, 5, 7]
+}, {
+  "id": "03",
+  "prompt": "Select all the images with items you would NOT want to find in your soup.",
+  "answers": [2, 3, 5, 7]
+}, {
+  "id": "04",
+  "prompt": "Select all images you'd use as wallpaper to seem adventurous.",
+  "answers": [1, 3, 5, 7]
+}, {
+  "id": "05",
+  "prompt": "Select all the images that depict a situation that would be a minor inconvenience.",
+  "answers": [1,3,5,7,9]
+}]
