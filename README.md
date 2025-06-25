@@ -8,3 +8,5 @@ Includes some fun questions like:
 * Select all the images that make you feel a vague sense of existential dread.
 
 All answers can be found in [./captcha/captchas.json](./captcha/captchas.json)
+
+Try it out here: [https://w3cj.github.io/kitboga-codejam25-xkcd-captcha/](https://w3cj.github.io/kitboga-codejam25-xkcd-captcha/)
