@@ -6,6 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style type="text/css">
+    :root {
+      --primary-color: #4285f4;
+      --primary-hover: #3367d6;
+      --error-color: #f44336;
+      --success-color: #4caf50;
+      --border-color: #e0e0e0;
+      --border-radius: 6px;
+      --border-radius-lg: 8px;
+      --background-white: #fff;
+      --container-bg: #fafbfc;
+      --transition-fast: 0.15s;
+      --transition-medium: 0.3s;
+      --box-shadow-check: 0 0 0 2px #c6dbfa;
+      --box-shadow-preview: 0 4px 16px rgba(0,0,0,0.18);
+      --box-shadow-checkmark: 0 1px 4px rgba(0,0,0,0.10);
+    }
+
     html,
     body {
       background: pink;
@@ -33,11 +50,13 @@
 
     #captcha-prompt {
       width: 100%;
-      background: #4285f4;
-      color: #fff;
+      background: var(--primary-color);
+      color: var(--background-white);
       display: flex;
       align-items: center;
       justify-content: center;
+      opacity: 1;
+      transition: opacity var(--transition-medium);
     }
 
     #captcha-prompt p {
@@ -48,20 +67,20 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(3, 1fr);
-      gap: 6px;
+      gap: 1px;
       width: 92%;
       max-width: 350px;
       height: 200px;
       max-height: 200px;
       box-sizing: border-box;
-      background: #fff;
+      background: var(--background-white);
       justify-items: stretch;
       align-items: stretch;
       flex: 1 1 0;
       min-height: 0;
     }
 
-    #captcha-grid .container {
+    .container {
       width: 100%;
       height: 100%;
       display: flex;
@@ -72,22 +91,22 @@
       aspect-ratio: 1 / 1;
       min-width: 0;
       min-height: 0;
-      border-radius: 6px;
-      border: 1.5px solid #e0e0e0;
-      background: #fafbfc;
+      border-radius: var(--border-radius);
+      border: 1.5px solid var(--border-color);
+      background: var(--container-bg);
       position: relative;
-      transition: border 0.15s;
+      transition: border var(--transition-fast);
       overflow: hidden;
       margin-top: 4px;
     }
-    #captcha-grid .container.selected {
-      border: 2.5px solid #4285f4;
-      box-shadow: 0 0 0 2px #c6dbfa;
+    .container.selected {
+      border: 2.5px solid var(--primary-color);
+      box-shadow: var(--box-shadow-check);
     }
-    #captcha-grid .container.selected .checkmark {
+    .container.selected .checkmark {
       display: flex;
     }
-    #captcha-grid .container .checkmark {
+    .container .checkmark {
       display: none;
       position: absolute;
       top: 4px;
@@ -95,25 +114,25 @@
       width: 18px;
       height: 18px;
       z-index: 2;
-      background: #4285f4;
+      background: var(--primary-color);
       border-radius: 50%;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+      box-shadow: var(--box-shadow-checkmark);
       align-items: center;
       justify-content: center;
     }
-    #captcha-grid .container .checkmark svg {
+    .container .checkmark svg {
       width: 12px;
       height: 12px;
-      fill: #fff;
+      fill: var(--background-white);
       display: block;
     }
-    #captcha-grid .container.incorrect .checkmark {
-      background: #f44336;
+    .container.incorrect .checkmark {
+      background: var(--error-color);
     }
-    #captcha-grid .container.correct .checkmark {
-      background: #4caf50;
+    .container.correct .checkmark {
+      background: var(--success-color);
     }
-    #captcha-grid .container img {
+    .container img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -131,24 +150,29 @@
       max-width: 180px;
       height: 30px;
       font-size: 1em;
-      border-radius: 6px;
+      border-radius: var(--border-radius);
       border: none;
-      background: #4285f4;
-      color: #fff;
+      background: var(--primary-color);
+      color: var(--background-white);
       cursor: pointer;
       box-sizing: border-box;
       letter-spacing: 0.5px;
-      transition: background 0.15s;
+      transition: background var(--transition-fast);
       flex: 0 0 auto;
     }
     #next-captcha:hover {
-      background: #3367d6;
+      background: var(--primary-hover);
     }
-
+    #next-captcha:disabled {
+      background: #b0c4de;
+      color: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
     #loading-next-captcha {
       max-width: 190px;
-      background: #4285f4;
-      color: #fff;
+      background: var(--primary-color);
+      color: var(--background-white);
       cursor: not-allowed;
       opacity: 0.5;
     }
@@ -162,9 +186,9 @@
       z-index: 10;
       width: 150px;
       height: 150px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      background: var(--background-white);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--box-shadow-preview);
       align-items: center;
       justify-content: center;
       pointer-events: none;
@@ -176,7 +200,7 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      border-radius: 8px;
+      border-radius: var(--border-radius-lg);
       display: block;
     }
   </style>
@@ -188,23 +212,75 @@
       <div id="captcha-prompt"><p></p></div>
       <div id="captcha-grid"></div>
       <button id="loading-next-captcha" disabled style="display: none;">CHECKING...</button>
-      <button id="next-captcha">NEXT (<span id="captcha-count">0</span>/<span id="captcha-total">3</span>)</button>
+      <button id="next-captcha">NEXT (<span id="captcha-count">0</span>/<span id="captcha-total">0</span>)</button>
       <div id="captcha-preview"><img src="" alt="preview" /></div>
     </div>
   </div>
 
   <script type="text/javascript">
+    const CONSTANTS = {
+      CONFIG: {
+        REQUIRED_CORRECT: 3, // The number of prompts that must be correct to pass
+        PROMPT_FADE_DELAY: 200, // The delay before the prompt fades in
+        CHECKING_DELAY: 2000, // The delay before the next captcha is loaded
+        PREVIEW_WIDTH: 180,
+        PREVIEW_HEIGHT: 180,
+      },
+      SELECTORS: {
+        NEXT_BUTTON: '#next-captcha',
+        LOADING_BUTTON: '#loading-next-captcha',
+        PROMPT_DIV: '#captcha-prompt',
+        PROMPT_P: '#captcha-prompt p',
+        GRID: '#captcha-grid',
+        PREVIEW: '#captcha-preview',
+        CONTAINER: '.container',
+        CHECKMARK: '.checkmark',
+        CAPTCHA_COUNT: '#captcha-count',
+        CAPTCHA_CONTAINER: '#captcha-container',
+        CAPTCHA_TOTAL: '#captcha-total',
+      },
+      FILES: {
+        CAPTCHAS_JSON: 'captchas.json',
+      },
+      STATUS: {
+        CHECKING: 'CHECKING...',
+        CORRECT: 'CORRECT!',
+        MISSING: 'MISSING ANSWERS...',
+        INCORRECT: 'INCORRECT!',
+      },
+      SVG: {
+        CHECK: '<svg viewBox="0 0 24 24"><path d="M20.7 6.3a1 1 0 0 0-1.4 0l-8.3 8.3-3.3-3.3a1 1 0 1 0-1.4 1.4l4 4a1 1 0 0 0 1.4 0l9-9a1 1 0 0 0 0-1.4z"/></svg>',
+        X: '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+      },
+    };
+
     (function(window, document){
-      // This is how you tell the parent window that the CAPTCHA was successful.
       function captchaSuccess() {
-        window.top.postMessage("success", '*');
+        window.top.postMessage('success', '*');
       }
 
+      const nextCaptchaButton = document.querySelector(CONSTANTS.SELECTORS.NEXT_BUTTON);
+      const loadingNextCaptchaButton = document.querySelector(CONSTANTS.SELECTORS.LOADING_BUTTON);
+      const promptDiv = document.querySelector(CONSTANTS.SELECTORS.PROMPT_DIV);
+      const captchaPromptP = document.querySelector(CONSTANTS.SELECTORS.PROMPT_P);
+      const grid = document.querySelector(CONSTANTS.SELECTORS.GRID);
+      const preview = document.querySelector(CONSTANTS.SELECTORS.PREVIEW);
+      const captchaCountSpan = document.querySelector(CONSTANTS.SELECTORS.CAPTCHA_COUNT);
+      const captchaPreview = document.querySelector(CONSTANTS.SELECTORS.PREVIEW);
+      const captchaTotalSpan = document.querySelector(CONSTANTS.SELECTORS.CAPTCHA_TOTAL);
+
+      captchaTotalSpan.textContent = CONSTANTS.CONFIG.REQUIRED_CORRECT;
+      captchaPreview.style.width = CONSTANTS.CONFIG.PREVIEW_WIDTH - 20 + 'px';
+      captchaPreview.style.height = CONSTANTS.CONFIG.PREVIEW_HEIGHT - 20 + 'px';
+
       let captchas = [];
+      let correctCount = 0;
+      let currentCaptcha = null;
+      let checking = false;
 
       async function getRandomCaptcha() {
         if (captchas.length === 0) {
-          const response = await fetch('captchas.json');
+          const response = await fetch(CONSTANTS.FILES.CAPTCHAS_JSON);
           captchas = await response.json();
         }
         const randomIndex = Math.floor(Math.random() * captchas.length);
@@ -213,13 +289,15 @@
         return captcha;
       }
 
-      let correctCount = 0;
-      let currentCaptcha = null;
-      let checking = false;
       async function loadCaptcha() {
+        promptDiv.style.opacity = 0;
+        nextCaptchaButton.disabled = true;
+
+        await new Promise(res => setTimeout(res, CONSTANTS.CONFIG.PROMPT_FADE_DELAY));
+
         currentCaptcha = await getRandomCaptcha();
-        document.querySelector('#captcha-prompt p').textContent = currentCaptcha.prompt;
-        const grid = document.getElementById('captcha-grid');
+        captchaPromptP.textContent = currentCaptcha.prompt;
+        promptDiv.style.opacity = 1;
         grid.innerHTML = '';
         const selected = new Set();
         const images = Array.from({ length: 9 }, (_, i) => i + 1);
@@ -237,23 +315,22 @@
 
           const checkmark = document.createElement('span');
           checkmark.className = 'checkmark';
-          checkmark.innerHTML = `<svg viewBox="0 0 24 24"><path d="M20.7 6.3a1 1 0 0 0-1.4 0l-8.3 8.3-3.3-3.3a1 1 0 1 0-1.4 1.4l4 4a1 1 0 0 0 1.4 0l9-9a1 1 0 0 0 0-1.4z"/></svg>`;
+          checkmark.innerHTML = CONSTANTS.SVG.CHECK;
           container.appendChild(checkmark);
 
           img.addEventListener('mouseenter', function(e) {
-            const preview = document.getElementById('captcha-preview');
             const previewImg = preview.querySelector('img');
             previewImg.src = img.src;
             preview.style.display = 'flex';
           });
+
           img.addEventListener('mousemove', function(e) {
-            const preview = document.getElementById('captcha-preview');
-            const containerRect = document.getElementById('captcha-container').getBoundingClientRect();
+            const containerRect = document.querySelector(CONSTANTS.SELECTORS.CAPTCHA_CONTAINER).getBoundingClientRect();
             let x = e.clientX - containerRect.left;
             let y = e.clientY - containerRect.top;
 
-            const previewW = 180;
-            const previewH = 180;
+            const previewW = CONSTANTS.CONFIG.PREVIEW_WIDTH;
+            const previewH = CONSTANTS.CONFIG.PREVIEW_HEIGHT;
             if (x + previewW > containerRect.width) x = containerRect.width - previewW;
             if (y + previewH > containerRect.height) y = containerRect.height - previewH;
             if (x < 0) x = 0;
@@ -262,10 +339,11 @@
             preview.style.top = y + 'px';
             preview.style.transform = 'none';
           });
+
           img.addEventListener('mouseleave', function(e) {
-            const preview = document.getElementById('captcha-preview');
             preview.style.display = 'none';
           });
+
           container.addEventListener('click', function() {
             if (checking) return;
             if (container.classList.toggle('selected')) {
@@ -273,63 +351,66 @@
             } else {
               selected.delete(i);
             }
+            updateNextButtonState();
           });
           grid.appendChild(container);
         }
 
         selected.clear();
+        updateNextButtonState();
       }
 
-      const nextCaptchaButton = document.getElementById('next-captcha');
-      const loadingNextCaptchaButton = document.getElementById('loading-next-captcha');
+      const selectedContainers = () => document.querySelectorAll(`${CONSTANTS.SELECTORS.GRID} ${CONSTANTS.SELECTORS.CONTAINER}.selected`);
+
+      function updateNextButtonState() {
+        const selectedCount = selectedContainers().length;
+        nextCaptchaButton.disabled = selectedCount === 0;
+      }
+
       nextCaptchaButton.addEventListener('click', () => {
-        loadingNextCaptchaButton.textContent = 'CHECKING...';
+        loadingNextCaptchaButton.textContent = CONSTANTS.STATUS.CHECKING;
         nextCaptchaButton.style.display = 'none';
         loadingNextCaptchaButton.style.display = 'block';
         checking = true;
         setTimeout(() => {
           let totalCorrect = 0;
           let totalIncorrect = 0;
-          document.querySelectorAll('#captcha-grid .container.selected').forEach(container => {
+          selectedContainers().forEach(container => {
             if (currentCaptcha.answers.includes(parseInt(container.dataset.index))) {
               container.classList.add('correct');
               totalCorrect++;
             } else {
               container.classList.add('incorrect');
-              const checkmark = container.querySelector('.checkmark');
-              checkmark.innerHTML = `<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+              const checkmark = container.querySelector(CONSTANTS.SELECTORS.CHECKMARK);
+              checkmark.innerHTML = CONSTANTS.SVG.X;
               totalIncorrect++;
             }
           });
   
           if (totalCorrect === currentCaptcha.answers.length && totalIncorrect === 0) {
             correctCount++;
-            loadingNextCaptchaButton.textContent = 'CORRECT!';
+            loadingNextCaptchaButton.textContent = CONSTANTS.STATUS.CORRECT;
           } else if (totalIncorrect === 0 && totalCorrect < currentCaptcha.answers.length) {
-            loadingNextCaptchaButton.textContent = 'MISSING ANSWERS...';
+            loadingNextCaptchaButton.textContent = CONSTANTS.STATUS.MISSING;
           } else if (totalIncorrect > 0) {
-            loadingNextCaptchaButton.textContent = 'INCORRECT!';
+            loadingNextCaptchaButton.textContent = CONSTANTS.STATUS.INCORRECT;
           }
   
           setTimeout(() => {
             loadingNextCaptchaButton.style.display = 'none';
             nextCaptchaButton.style.display = 'block';
-            document.querySelector('#captcha-count').textContent = correctCount;
-            if (correctCount === 3) {
+            captchaCountSpan.textContent = correctCount;
+            if (correctCount === CONSTANTS.CONFIG.REQUIRED_CORRECT) {
               captchaSuccess();
             } else {
               loadCaptcha();
             }
             checking = false;
-          }, 2000);
-        }, 2000);
+          }, CONSTANTS.CONFIG.CHECKING_DELAY);
+        }, CONSTANTS.CONFIG.CHECKING_DELAY);
       });
 
       loadCaptcha();
-
-      // Your CAPTCHA code goes here, we've added a simple example below:
-      document.getElementById('solve')
-           .addEventListener('click', () => captchaSuccess());
 
     })(window, document);
   </script>
